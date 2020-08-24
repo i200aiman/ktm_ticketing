@@ -1,0 +1,64 @@
+﻿@model KTMTicketing.Models.CustomerResponse
+
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Customer Details</title>
+    <!-- Mobile Specific Metas -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Font-->
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <!-- Main Style Css -->
+    <link href="~/Content/style.css" rel="stylesheet" />
+</head>
+<body class="form-v9">
+    <div class="page-content">
+        <div class="form-v9-content" style="background: -webkit-gradient(linear,left top,left bottom,from(rgba(128, 128, 155,.8)),to(rgba(128, 128, 155,.8))),url(../Content/images/bg-masthead.jpg); background-position: center; background-repeat: no-repeat; background-size: cover; height: 100%; ">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "custform", @class = "form-detail" }))
+            {
+                <h2>Customer Details</h2>
+                <center>
+                    <p>From: @ViewBag.Origin  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To: @ViewBag.Destination ( @ViewBag.WayLoc )</p>
+                    <p>Quantity: @ViewBag.Quantity </p>
+                    <p>Price: RM<span>@ViewBag.Price.ToString("0.00") ( @ViewBag.Citizen Price )</span></p>
+                </center>
+                @Html.ValidationSummary()
+                <div class="form-row-total">
+                    <div class="form-row">
+                        @Html.TextBoxFor(x => x.Passenger.PassName, new { @class = "input-text", @placeholder = "Your Name" })
+                    </div>
+                    <div class="form-row">
+                        @Html.TextBoxFor(x => x.Passenger.PassID, new { @class = "input-text", @placeholder = "Your IC/Passport" })
+                    </div>
+                </div>
+                <div class="form-row-total">
+                    <div class="form-row">
+                        @Html.TextBoxFor(x => x.Passenger.PassEmail, new { @class = "input-text", @placeholder = "Your Email" })
+                    </div>
+                </div>
+                @Html.HiddenFor(m => m.Passenger.OriginLoc, new { @Value = @ViewBag.Origin })
+                @Html.HiddenFor(m => m.Passenger.DestiLoc, new { @Value = @ViewBag.Destination })
+                @Html.HiddenFor(m => m.Passenger.WayLoc, new { @Value = @ViewBag.WayLoc })
+                @Html.HiddenFor(m => m.Passenger.Quantity, new { @Value = @ViewBag.Quantity })
+                @Html.HiddenFor(m => m.Passenger.Citizen, new { @Value = @ViewBag.Citizen })
+                @Html.HiddenFor(m => m.Passenger.OriginLocID, new { @Value = @ViewBag.OriginID })
+                @Html.HiddenFor(m => m.Passenger.DestiLocID, new { @Value = @ViewBag.DestinationID })
+                @Html.HiddenFor(m => m.Passenger.WayLocID, new { @Value = @ViewBag.WayLocID })
+                @Html.HiddenFor(m => m.Passenger.CitizenID, new { @Value = @ViewBag.CitizenID })
+                @Html.HiddenFor(m => m.Passenger.Price, new { @Value = @ViewBag.Price })
+                
+                <div class="form-row-last">
+                    <input type="submit" value="Confirm" class="register" />
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

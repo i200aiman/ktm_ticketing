@@ -1,0 +1,57 @@
+﻿@model KTMTicketing.Models.CustomerResponse
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Thank You</title>
+    <!-- Mobile Specific Metas -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Font-->
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <!-- Main Style Css -->
+    <link href="~/Content/style.css" rel="stylesheet" />
+</head>
+<body class="form-v9">
+    <div class="page-content">
+        <div class="form-v9-content" style="background: -webkit-gradient(linear,left top,left bottom,from(rgba(128, 128, 155,.8)),to(rgba(128, 128, 155,.8))),url(../Content/images/bg-masthead.jpg); background-position: center; background-repeat: no-repeat; background-size: cover; height: 100%; ">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "custform", @class = "form-detail" }))
+            {
+                @Html.ValidationSummary()
+                <center>
+                    <p>Thank You @Model.Passenger.PassName !</p>
+                    <p>Receipt has been sent to your email @Model.Passenger.PassEmail.</p>
+                    <p>From: @Model.Passenger.OriginLoc &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To: @Model.Passenger.DestiLoc ( @Model.Passenger.WayLoc )</p>
+                    <p>Quantitiy: @Model.Passenger.Quantity </p>
+                    <p>Price: RM<span>@Model.Passenger.Price.ToString("0.00") ( @Model.Passenger.Citizen )</span></p>
+                </center>
+            }
+        </div>
+    </div>
+    @{
+        try
+        {
+            WebMail.SmtpServer = "smtp.gmail.com";
+            WebMail.SmtpPort = 587;
+            WebMail.EnableSsl = true;
+            WebMail.UserName = "jkelabu55@gmail.com";
+            WebMail.Password = "jkelabu123";
+            WebMail.From = "jkelabu55@gmail.com";
+            WebMail.Send(Model.Passenger.PassEmail, "KTM Ticket Receipt",
+                "<p>Thank You " + Model.Passenger.PassName + " for using our service! Below are the information and the amount you need to pay.</p>"
+                + "<p>From: " + Model.Passenger.OriginLoc + " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To: " + Model.Passenger.DestiLoc + " ( " + Model.Passenger.WayLoc + " )</p>"
+                + "<p>Quantity: "+ Model.Passenger.Quantity +"</span></p>"
+                + "<p>Price: RM<span>" + Model.Passenger.Price.ToString("0.00") + " ( " + Model.Passenger.Citizen + " )</span></p>");
+        }
+        catch (Exception)
+        {
+            <b>Sorry - we couldn't send the email to state your receipt.</b>
+        }
+    }
+</body>
+</html>
