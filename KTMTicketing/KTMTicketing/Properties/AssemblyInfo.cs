@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("KTMTicketing")]
+[assembly: AssemblyTitle("KTMTicketingv2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("KTMTicketing")]
+[assembly: AssemblyProduct("KTMTicketingv2")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("671f0e68-7b7a-4094-be25-5bc562c67b36")]
+[assembly: Guid("40e53fd3-634c-43ee-952b-0d9ee3ba5720")]
 
 // Version information for an assembly consists of the following four values:
 //

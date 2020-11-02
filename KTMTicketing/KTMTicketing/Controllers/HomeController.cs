@@ -1,47 +1,54 @@
-﻿using System;
+﻿using KTMTicketingv2.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Web;
 using System.Web.Mvc;
-using System.Collections;
-using KTMTicketing.Models;
 
-namespace KTMTicketing.Controllers
+namespace KTMTicketingv2.Controllers
 {
     public class HomeController : Controller
     {
-        //
-        // GET: /Home/
+        
+        // GET: Home
+        [Authorize]
         public ActionResult Index()
         {
-            DateTime datetime = DateTime.Now;
-            int hour = DateTime.Now.Hour;
-            if (hour < 12)
-                ViewBag.Greeting = "Good Morning";
-            else
-                ViewBag.Greeting = "Good Evening";
-            ViewBag.Datetime = datetime;
             return View();
         }
+
+        [Authorize(Roles = "Admin")]
+        public ActionResult AdminIndex()
+        {
+            return View();
+        }
+
         [HttpGet]
-        public ActionResult KtmTicket()
+        public ActionResult BuyTicket()
         {
             ktmTable ktmTab = new ktmTable();
             ViewBag.Rate = ktmTab.rate;
             ViewBag.DictLane = ktmTab.dictLane;
             return View();
         }
+
         [HttpPost]
-        public ActionResult KtmTicket(CustomerResponse cr)
+        [Authorize]
+        public ActionResult BuyTicket(TicketDetails td)
         {
             if (ModelState.IsValid)
             {
-                return RedirectToAction("CustomerDetails", new {
-                    OriginLoc = cr.Destination.OriginLoc,
-                    DestiLoc = cr.Destination.DestiLoc,
-                    WayLoc = cr.Destination.WayLoc,
-                    Citizen = cr.Destination.Citizen,
-                    Quantity = cr.Destination.Quantity
+                //return View("PurchaseDetails", td);
+                return RedirectToAction("PurchaseDetails", new
+                {
+                    OriginLoc = td.Destination.OriginLoc,
+                    DestiLoc = td.Destination.DestiLoc,
+                    WayLoc = td.Destination.WayLoc,
+                    Citizen = td.Destination.Citizen,
+                    Quantity = td.Destination.Quantity
                 });
             }
             else
@@ -53,43 +60,133 @@ namespace KTMTicketing.Controllers
                 return View();
             }
         }
+
         [HttpGet]
-        public ActionResult CustomerDetails(String OriginLoc, String DestiLoc, String WayLoc, String Citizen, int Quantity)
+        public ActionResult PurchaseDetails(String OriginLoc, String DestiLoc, String WayLoc, String Citizen, int Quantity)
         {
-            KTMTicketing.Controllers.ktmPrice ktmPrice = new KTMTicketing.Controllers.ktmPrice(OriginLoc, DestiLoc, WayLoc, Citizen, Quantity);
-            ViewBag.DestinationID = ktmPrice.getDestinationID();
-            ViewBag.OriginID = ktmPrice.getOriginID();
-            ViewBag.CitizenID = ktmPrice.getCitizenID();
-            ViewBag.WayLocID = ktmPrice.getWayID();
-            ViewBag.Destination = ktmPrice.getDestination();
-            ViewBag.Origin = ktmPrice.getOrigin();
+            KTMTicketingv2.Controllers.ktmPrice ktmPrice = new KTMTicketingv2.Controllers.ktmPrice(OriginLoc, DestiLoc, WayLoc, Citizen, Quantity);
+            ViewBag.DestiLoc = ktmPrice.getDestination();
+            ViewBag.OriginLoc = ktmPrice.getOrigin();
             ViewBag.Price = ktmPrice.getPrice();
             ViewBag.WayLoc = ktmPrice.getWay();
             ViewBag.Citizen = ktmPrice.getCitizen();
             ViewBag.Quantity = ktmPrice.getQuantity();
+            ViewBag.DestinationID = ktmPrice.getDestinationID();
+            ViewBag.OriginID = ktmPrice.getOriginID();
+            ViewBag.CitizenID = ktmPrice.getCitizenID();
+            ViewBag.WayLocID = ktmPrice.getWayID();
+
+            string emailID = User.Identity.Name;
+
+            using (KTMTicketingEntities dc = new KTMTicketingEntities())
+            {
+                var users = dc.Users.First(a => a.EmailID == emailID);
+
+                if (users != null)
+                {
+                    ViewBag.EmailID = users.EmailID;
+                    ViewBag.FirstName = users.FirstName;
+                    ViewBag.LastName = users.LastName;
+                    ViewBag.ICNumber = users.ICNumber;
+                    return View();
+                }
+                else
+                {
+                    ViewBag.Message = "Error!";
+                }
+            }
+
             return View();
         }
+
         [HttpPost]
-        public ActionResult CustomerDetails(CustomerResponse cr)
+        public ActionResult PurchaseDetails(TicketDetails td)
         {
             if (ModelState.IsValid)
             {
-                return View("Thanks", cr);
+                return View("PurchaseSummary", td);
             }
 
             else
             {
-                return RedirectToAction("CustomerDetails", new
+                return RedirectToAction("PurchaseDetails", new
                 {
-                    OriginLoc = cr.Passenger.OriginLocID,
-                    DestiLoc = cr.Passenger.DestiLocID,
-                    WayLoc = cr.Passenger.WayLocID,
-                    Citizen = cr.Passenger.CitizenID,
-                    Quantity = cr.Passenger.Quantity
+                    OriginLoc = td.Passenger.OriginLocID,
+                    DestiLoc = td.Passenger.DestiLocID,
+                    WayLoc = td.Passenger.WayLocID,
+                    Citizen = td.Passenger.CitizenID,
+                    Quantity = td.Passenger.Quantity
                 });
             }
         }
+
+        [HttpGet]
+        public ActionResult ViewPurchasedTicket()
+        {
+
+            string emailID = HttpContext.User.Identity.Name;
+
+            using (KTMTicketingEntities dc = new KTMTicketingEntities())
+            {
+                /*var tickets = dc.PurchasedTickets
+                    .Where(t => t.EmailID == emailID)
+                    .Where(t => t.PurchasedOn > DateTime.Now)
+                    .OrderBy(t => t.PurchasedOn)
+                    .ToList();*/
+
+                var tickets = (from a in dc.PurchasedTickets
+                               where a.EmailID.Equals(emailID)
+                               select a).ToList();
+
+                return View(tickets);
+            }
+
+        }
+
+        public ActionResult AccountSetting()
+        {
+            var emailID = User.Identity.Name;
+            
+            using(KTMTicketingEntities dc = new KTMTicketingEntities())
+            {
+                var user = dc.Users.First(a => a.EmailID == emailID);
+
+                var viewModel = new AccountSetting
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    EmailID = user.EmailID,
+                    ICNumber = user.ICNumber
+                };
+                return View(viewModel);
+            }
+        }
+
+        public ActionResult UpdateAccountSetting(AccountSetting viewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                using (KTMTicketingEntities bc = new KTMTicketingEntities())
+                {
+                    var emailID = User.Identity.Name;
+                    var user = bc.Users.SingleOrDefault(a => a.EmailID == emailID);
+
+                    if(user != null)
+                    {
+                        user.FirstName = viewModel.FirstName;
+                        user.LastName = viewModel.LastName;
+                        user.EmailID = viewModel.EmailID;
+                        user.ICNumber = viewModel.ICNumber;
+
+                        bc.SaveChanges();
+                    }
+                }
+            }
+            return RedirectToAction("AccountSetting");
+        }
     }
+
+    //Class to calculate ktm price
     public class ktmPrice
     {
         private String origin = null;
@@ -106,7 +203,7 @@ namespace KTMTicketing.Controllers
 
         public ktmPrice(String OriginLoc, String DestiLoc, String WayLoc, String Citizen, int Quantity)
         {
-            KTMTicketing.Controllers.ktmTable ktmTab = new KTMTicketing.Controllers.ktmTable();
+            KTMTicketingv2.Controllers.ktmTable ktmTab = new KTMTicketingv2.Controllers.ktmTable();
             String way = "Return";
             String citizenC = "Normal Citizen";
             int quantity = Quantity;
@@ -210,7 +307,10 @@ namespace KTMTicketing.Controllers
             return price;
         }
     }
-    public class ktmTable{
+
+    //Class for table data train and price
+    public class ktmTable
+    {
         public IDictionary<int, string> dictLane = new Dictionary<int, string>()
             {
                 {0, "PEL. KLANG"},
