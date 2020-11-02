@@ -1,4 +1,5 @@
-# ktm_ticketing
-ktm ticketing system for fellow malaysian
+# Ktm Ticketing System
 
-in orderto buy a ticket customer need to make a payment first.
+An online booking system project by Khairi Haziq Aiman
+
+In order to buy a ticket, customer need to make a payment first.
